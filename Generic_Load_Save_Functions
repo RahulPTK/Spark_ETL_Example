@@ -1,0 +1,98 @@
+"""
+A simple example demonstrating Spark SQL data sources.
+Run with:
+  ./bin/spark-submit examples/src/main/python/sql/datasource.py
+"""
+from __future__ import print_function
+
+from pyspark.sql import SparkSession
+
+from pyspark.sql import Row
+
+def basic_datasource_example(spark):
+    
+    """the default data source"""
+    df = spark.read.load("examples/src/main/resources/users.parquet")
+    df.select("name", "favorite_color").write.save("namesAndFavColors.parquet")
+    df.write.partitionBy("favorite_color").format("parquet").save("namesPartByColor.parquet")
+    
+    df = spark.read.parquet("examples/src/main/resources/users.parquet")
+    (df
+        .write
+        .partitionBy("favorite_color")
+        .bucketBy(42, "name")
+        .saveAsTable("people_partitioned_bucketed"))
+            
+    
+    """Manual Specifying Options"""
+    You can also manually specify the data source that will be used along with any extra options that you would like to pass 
+    to the data source. Data sources are specified by their fully qualified name (i.e., org.apache.spark.sql.parquet), but for
+    built-in sources you can also use their short names (json, parquet, jdbc, orc, libsvm, csv, text). DataFrames loaded from 
+    any data source type can be converted into other types using this syntax.
+
+"""To load a JSON file you can use"""
+   df = spark.read.load("examples/src/main/resources/people.json", format="json")
+   df.select("name", "age").write.save("namesAndAges.parquet", format="parquet")
+   
+"""To load a CSV file"""
+   df = spark.read.load("examples/src/main/resources/people.csv",
+                     format="csv", sep=":", inferSchema="true", header="true")
+                     
+   or  
+   source_file = spark.read.format("csv").option("header","true").load("E:/spark_learning/Practice/example1.csv")
+   source_file.head()
+   source_file.show()
+   source_file.count()
+   source_file.select(["name"]).show()
+   source_nrm = source_file.createOrReplaceTempView("example1")
+   spark.sql("select * from example1").show()
+   
+   
+"""The extra options are also used during write operation. For example, you can control bloom filters 
+   and dictionary encodings for ORC data sources. The following ORC example will create bloom filter 
+   on favorite_color and use dictionary encoding for name and favorite_color. For Parquet, there exists 
+   parquet.enable.dictionary, too. To find more detailed information about the extra ORC/Parquet options, 
+   visit the official Apache ORC/Parquet websites"""
+   
+    df = spark.read.load("examples/src/main/resources/partitioned_users.orc",
+                         format="orc", pathGlobFilter="*.orc")
+                        
+    
+     df = spark.read.orc("examples/src/main/resources/users.orc")
+    (df.write.format("orc")
+        .option("orc.bloom.filter.columns", "favorite_color")
+        .option("orc.dictionary.key.threshold", "1.0")
+        .option("orc.column.encoding.direct", "name")
+        .save("users_with_options.orc"))
+        
+        
+     df.write.bucketBy(42, "name").sortBy("age").saveAsTable("people_bucketed")
+     
+     
+     """Run SQL on files directly
+        Instead of using read API to load a file into DataFrame and query it, you can also query that file directly with SQL."""
+        
+        df = spark.sql("SELECT * FROM parquet.`examples/src/main/resources/users.parquet`")
+        
+         spark.sql("DROP TABLE IF EXISTS people_bucketed")
+         spark.sql("DROP TABLE IF EXISTS people_partitioned_bucketed")
+         
+         
+         if __name__ == "__main__":
+         spark = SparkSession \
+        .builder \
+        .appName("Python Spark SQL data source example") \
+        .getOrCreate()
+
+    basic_datasource_example(spark)
+    spark.stop()
+    
+    
+        
+     
+     
+   
+    
+    
+    
+
