@@ -1,0 +1,30 @@
+--- Path for SQL queries 
+https://github.com/apache/spark/tree/master/sql/core/src/test/resources/sql-tests/inputs
+
+---Path for SQL queries"""
+https://github.com/apache/spark/tree/master/sql
+
+"""Agg functions in spark"""
+The agg() function in PySpark
+Basically, there is one function that takes care of all the agglomerations in Spark. 
+This is called “agg()” and takes some other function in it. There are various possibilities, 
+the most common ones are building sums, calculating the average or max/min values. 
+The “agg()” function is called on a grouped dataset and is executed on one column. 
+In the following samples, some possibilities are shown"""
+from pyspark.sql.functions import *
+df_ordered.groupby().agg(max(df_ordered.price)).collect()
+
+df_ordered.groupby().agg(avg(df_ordered.price)).collect()
+
+df_ordered.groupby().agg(sum(df_ordered.price)).collect()
+
+df_ordered.groupby().agg(mean(df_ordered.price)).collect()
+
+df_ordered.groupby().agg(count(df_ordered.price)).collect()
+
+Spark SQL Dataframes: Creating a column with constant value
+val my_df2=my_df.withColumn(“new_column”,[some value]”);
+val my_df2=my_df.withColumn(“new_column”,lit(“Jedi”))
+
+//now this will create a new column named new_column with the value “Jedi” in it.
+
