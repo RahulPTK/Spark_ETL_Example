@@ -1,0 +1,94 @@
+"""Creating Dataframe"""
+"""To create dataframe first we need to create spark session"""
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("Basics").getOrCreate()
+spark
+
+Create Dataframe from file
+Create Schema manually
+Next we need to create the list of Structure fields
+
+from pyspark.sql.types import StructField, StringType, IntegerType, StructType
+
+data_schema = [StructField('age', IntegerType(), True),
+              StructField('name', StringType(), True)]
+
+final_struc = StructType(fields=data_schema)
+
+df = spark.read.json('people.json', schema=final_struc)
+df.printSchema()
+
+df.columns
+df.dtypes
+
+df.describe().show()
+df.show(1)
+
+"""Dataframe Selection"""
+
+type(df['age'])
+df['age'] -- not show anything
+
+df.select('age')
+
+df.select('age').show()
+
+df.head(2)
+
+df.select(['age', 'name']).show()
+
+df.filter(df.age == 30).show()
+
+df.createOrReplaceTempView("people")
+sql_results = spark.sql("SELECT * FROM people")
+sql_results.show()
+
+"""Dataframe Column
+Rename column"""
+df.withColumnRenamed('age', 'Age').show()
+--Convert to DF
+df.toDF('Age', 'Name').show()
+
+# Operation/Function and Column Alias
+df.withColumn('doubleage',df['age']*2).show()
+
+# Create new column based on pyspark.sql.column.Column
+df.withColumn('newage', df['age']).show()
+
+df.drop('name').show()
+
+# Select Row based on condition
+result = df.filter(df.age == 30).collect()
+row = result[0]
+
+type(result[0])
+row.count(30)
+
+Rows can be called to turn into dictionaries
+
+row.asDict().values()
+
+row.asDict()['age']
+
+# Print Row as Dictionary
+for item in result[0]:
+#     print(type(item))
+    print(item)
+
+for item in row.asDict():
+#     print(type(item))
+    print(item)
+    
+    # Print Dictionary Keys
+for item in row.asDict().keys():
+#     print(type(item))
+    print(item)
+    
+    # Print Dictionary values
+for item in row.asDict().values():
+#     print(type(item))
+    print(item)
+    
+    
