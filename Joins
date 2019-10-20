@@ -1,0 +1,67 @@
+Join Data in Spark
+In most cases, you will sooner or later come across data joining in whatever form. 
+In our tutorial, we will look at three different ways of joining data: via a join, a union or an intersect.
+
+But first, we need to create some datasets we can join. Our financial datasets from the previous samples isn’t comprehensive enough, 
+so we create some other dummy data:
+
+
+ 
+names = spark.createDataFrame([(1, "Mario"), (2, "Max"), (3, "Sue")], ("nid", "name"))
+revenues = spark.createDataFrame([(1, 9.99), (2, 189.99), (3, 1099.99)], ("rid", "revenue"))
+We simply create two dataframes: names and revenues. These dataframes are initialised as a list of key/value pairs. 
+Now, it is about time to learn the first item: the “join” function.
+
+Creating a join in Spark: the Join() in PySpark
+A join() operation is performed on the dataframe itself. Basically, the join operation takes several parameters.
+We will look at the most important ones:
+
+Other Dataset: the other dataset to join with
+Join by: the IDs to join on (must be existing in both datasets)
+Type: inner, outer, left/right outer join
+Basically, the inner join returns all values that are matched (e.g. available in both datasets). 
+The outer join also returns values that haven’t got a matching “partner” in the other dataset; 
+non-matching datasets are filled with Null-values. 
+The difference between left and right outer join is that dataset either from the left (first dataset) or right (second dataset) is used. The left or right syntax comes from SQL, where you write it from left to right. In our following sample, we use an inner join:
+
+joined = names.join(revenues, names.nid == revenues.rid, "inner").drop("rid")
+joined.show()
+
+ 
+Basically, all items should have a “matching partner” from both datasets. The result should be this:
+
++---+-----+-------+
+|nid| name|revenue|
++---+-----+-------+
+|  1|Mario|   9.99|
+|  3|  Sue|1099.99|
+|  2|  Max| 189.99|
++---+-----+-------+
+Creating the union in Spark: the union() method in PySpark
+Creating a union is the second way to bring data together. Basically, a Union is appending data to the original dataset without taking the structure or ids into account. Basically, the union just copies the other dataset to the first dataset to the end of it. The following sample shows the union:
+
+dnames.union(revenues).show()
+The output should be this:
+
++---+-------+
+|nid|   name|
++---+-------+
+|  1|  Mario|
+|  2|    Max|
+|  3|    Sue|
+|  1|   9.99|
+|  2| 189.99|
+|  3|1099.99|
++---+-------+
+Creating the intersection in Spark: the intersect() in PySpark
+The third way in our tutorial today is the intersect() method. Basically, it only returns those datasets that have a matching dataset between the two compared datasets. As for our sample, we first need to create a new dataset, where we add new items of id/name pairs and then call the intersect statement:
+
+names2 = spark.createDataFrame([(1, "Mario"), (4, "Tom"), (5, "Lati")], ("nid", "name"))
+names2.intersect(names).show()
+And the output should be this:
+
++---+-----+
+|nid| name|
++---+-----+
+|  1|Mario|
++---+-----+
